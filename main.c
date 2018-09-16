@@ -1,7 +1,8 @@
 #include <stdio.h>
-#include "crapto1.h"
+#include "crapto1.c"
 #include <string.h>
 #include <stdbool.h>
+#include "crypto1.c"
 
 
 
@@ -61,8 +62,12 @@ int main(int argc, char** argv) {
     uint32_t suc96 = prng_successor(NT,96);
     uint32_t ks2 = suc64^ARcipher;
     uint32_t ks3 = suc96^ATcipher;
+    printf("ks2: %8x\n",ks2);
     state=lfsr_recovery64(ks2,ks3); //After recovery fun,the flsr state is ba738f3b9cab
     lfsr_rollback_word(state,0,0);
+    lfsr_rollback_word(state,0,0);
+    uint32_t ks2ch = crypto1_word(state,0,0);
+    printf("check ks2: %8x\n",ks2ch);
     lfsr_rollback_word(state,0,0);
     uint32_t ks1=lfsr_rollback_word(state,NRcipher,1); //After rollback fun,the flsr state is 2d45da96064f
     uint32_t UxorNT=UID^NT;
