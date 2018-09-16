@@ -66,7 +66,11 @@ int main(int argc, char** argv) {
     state=lfsr_recovery64(ks2,ks3); //After recovery fun,the flsr state is ba738f3b9cab
     lfsr_rollback_word(state,0,0);
     lfsr_rollback_word(state,0,0);
-    uint32_t ks2ch = crypto1_word(state,0,0);
+    uint32_t ks2ch = 0;
+    int i;
+    for(i=0;i<32;i++){
+        ks2ch = (ks2ch << 1) | crypto1_bit(state,0,0);
+    }
     printf("check ks2: %8x\n",ks2ch);
     lfsr_rollback_word(state,0,0);
     uint32_t ks1=lfsr_rollback_word(state,NRcipher,1); //After rollback fun,the flsr state is 2d45da96064f

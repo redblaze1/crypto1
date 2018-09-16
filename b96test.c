@@ -8,7 +8,7 @@
 
 int main(){
     srand(time(NULL));
-    int j,i,count=0;
+    int k,j,i,count=0;
     uint32_t nt = 0;
     struct Crypto1State* state;
     uint32_t nack_ks=0;
@@ -21,8 +21,9 @@ int main(){
         state = crypto1_create(key);
         nt = (rand() % 65536) << 16 | (rand() % 65536);
         crypto1_word(state,nt,0);
-        ks2 = crypto1_word(state,0,1);
-    
+        for(k=0;k<32;k++)
+        ks2 = (ks2 << 1) | crypto1_bit(state,0,0);
+
         if( parity(ks2 & 0xff000000) ^ 1 ^ ( (ks2 >> 23) & 1 ) ^ 1){
             if( parity(ks2 & 0x00ff0000) ^ 1 ^ ( (ks2 >> 15) & 1 ) ^1){
                 if ( parity(ks2 & 0x0000ff00) ^ 1 ^ ( (ks2 >> 7) & 1 ) ^ 1)
