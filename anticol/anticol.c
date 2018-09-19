@@ -137,7 +137,7 @@ print_usage(char *argv[])
   printf("\t-q\tQuiet mode. Suppress output of READER and EMULATOR data (improves timing).\n");
   printf("\t-f\tForce RATS.\n");
   printf("\t-t\tMeasure response time (in cycles).\n");
-  printf("\t-k\tSet LFSR key. ex:-k 123456789abc\n (If no set key,then default key is ffffffffffff)");
+  printf("\t-k\tSet LFSR key. ex:-k 123456789abc\n (If no set key,then default key is ffffffffffff)\n");
   printf("\t-b\tset block. ex:-b 3a\n");
   printf("\t-w\tset write block data. ex:-w ffffffffffffFF078069ffffffffffff\n");
 }
@@ -400,7 +400,7 @@ main(int argc, char *argv[])
       pbtTxpar[i] = oddparity(abtread[i]) ^ filter(state->odd);
       abtdata[i] = ks_after[i] ^ abtread[i];
     }
-
+// 65  a7  ca  28 b538e462
   transmit_bits(abtdata, 32 ,pbtTxpar);
   memcpy(abtblockdata, abtRx, 16);
   uint8_t  ksblock[18] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };

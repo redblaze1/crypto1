@@ -78,10 +78,10 @@ int main(int argc, char** argv) {
     uint32_t ks0=lfsr_rollback_word(state,UxorNT,0); //After rollback fun,the flsr state is 7988256e2d45
     uint32_t NR=ks1^NRcipher;
     crypto1_get_lfsr(state, &key);
-    printf("KEY: %012lx\n" , key);
+    printf("Key found: %012lx\n" , key);
 
     if (information){
-    printf("NR: %08x\n",NR);
+    printf("nr: %08x\n",NR);
     }
     return 0;
 }
