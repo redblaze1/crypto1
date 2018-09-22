@@ -10,9 +10,9 @@
 
 bool check_0(struct Crypto1State* state,const uint32_t ks){
     uint8_t nextks=0;
-    if( parity(ks & 0xff000000) ^ 1 ^ ( (ks >> 23) & 1 ) ^ 1){
-        if( parity(ks & 0x00ff0000) ^ 1 ^ ( (ks >> 15) & 1 ) ^1){
-            if ( parity(ks & 0x0000ff00) ^ 1 ^ ( (ks >> 7) & 1 ) ^ 1){
+    if( parity(ks & 0xff000000) ^ 1 ^ BIT(ks,23) ^ 1){
+        if( parity(ks & 0x00ff0000) ^ 1 ^ BIT(ks,15) ^1){
+            if ( parity(ks & 0x0000ff00) ^ 1 ^ BIT(ks,7) ^ 1){
                 nextks = filter(state->odd);
                 if ( parity(ks & 0x000000ff) ^ 1 ^ nextks ^ 1){
                     return true;
@@ -49,10 +49,10 @@ int main(){
             
             if(check_0(state,ks2)){
                 nack_ks = 0;
-                nack_ks = (nack_ks << 1) | crypto1_bit(state,0,1);
-                nack_ks = (nack_ks << 1) | crypto1_bit(state,1,1);
-                nack_ks = (nack_ks << 1) | crypto1_bit(state,0,1);
-                nack_ks = (nack_ks << 1) | crypto1_bit(state,1,1);
+                nack_ks = (nack_ks << 1) | crypto1_bit(state,0,0);
+                nack_ks = (nack_ks << 1) | crypto1_bit(state,0,0);
+                nack_ks = (nack_ks << 1) | crypto1_bit(state,0,0);
+                nack_ks = (nack_ks << 1) | crypto1_bit(state,0,0);
                 if ( nack_ks == 0 )
                     count++;
             }
