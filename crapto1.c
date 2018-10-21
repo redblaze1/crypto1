@@ -395,7 +395,7 @@ uint32_t *lfsr_prefix_ks(uint8_t ks[8], int isodd)
 	if(!candidates)
 		return 0;
 
-	for(i = 0; i < 1 << 21; ++i) {
+	for(i = 0; i < 1 << 21; ++i) {  //i=0;i<1fffff;i++
 		for(c = 0, good = 1; good && c < 8; ++c) {
 			entry = i ^ fastfwd[isodd][c];
 			good &= (BIT(ks[c], isodd) == filter(entry >> 1));

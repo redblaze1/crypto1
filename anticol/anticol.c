@@ -158,6 +158,8 @@ main(int argc, char *argv[])
       force_rats = true;
     } else if (0 == strcmp(argv[arg], "-t")) {
       timed = true;
+    } else if (0 == strcmp(argv[arg], "-kb")) {
+      abtAuthBlock[0] = 0x61;
     } else if (0 == strcmp(argv[arg], "-w")){
       write_tag = true;
       if (strlen(argv[++arg]) == 32){
