@@ -1,0 +1,1 @@
+sudo ./antitest -ns -file ~/key.txt 00 15 | grep -P "      |Sector" | sed 's/^[ \t]*//g'
