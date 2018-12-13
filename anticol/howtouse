@@ -1,1 +1,2 @@
-sudo ./antitest -ns -file ~/key.txt 00 15 | grep -P "      |Sector" | sed 's/^[ \t]*//g'
+sudo ./anticol -ns -file ~/key.txt 00 15 | grep -P "      |Sector" | sed 's/^[ \t]*//g'
+sudo ./xiemi -ns| grep -P "      |Sector" | sed 's/^[ \t]*//g'

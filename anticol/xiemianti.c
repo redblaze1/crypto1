@@ -34,7 +34,7 @@ static uint8_t abtAtqa[2];
 static uint8_t abtSak;
 static uint8_t abtAts[MAX_FRAME_LEN];
 static uint8_t szAts = 0;
-static size_t szCL = 1;//Always start with Cascade Level 1 (CL1)
+static size_t szCL = 2;//Always start with Cascade Level 2 (CL2)
 static nfc_device *pnd;
 
 bool    quiet_output = false;
@@ -501,134 +501,34 @@ bool readselse(int k,uint8_t block){
   if (abtRx[0] & SAK_FLAG_ATS_SUPPORTED) {
     iso_ats_supported = true;
   }
-  // if ((abtRx[0] & SAK_FLAG_ATS_SUPPORTED) || force_rats) {
-  //   iso14443a_crc_append(abtRats, 2);
-  //   if (transmit_bytes(abtRats, 4)) {
-  //     memcpy(abtAts, abtRx, szRx);
-  //     szAts = szRx;
-  //   }
-  // }
-  if(auth_block || readse){
-    if(readse){
-      state = crypto1_create(keys[k]);
-      printf("use key[%d]: %lx\n",k,keys[k]);
-    } else {
-      state=crypto1_create(key);
-    }
+  uint8_t secrettr[2] = {0x95,0x20};
+  transmit_bits(secrettr,16,NULL);
 
-  iso14443a_crc_append(abtAuthBlock, 2);
-  transmit_bytes(abtAuthBlock, 4);
-  memcpy(abtNT, abtRx, 4);
-  uint32_t nt;
-  uint32_t uid_xor_nt;
-
-  //uint8_t UID XOR NT convert uint32_t data
-  // uid_xor_nt = *(uint32_t*)abtdata ^ *(uint32_t*)abtNT;
-  for(i=0;i<=3;i++){
-    uid_xor_nt = (uid_xor_nt << 8) | (uint32_t)(abtRawUid[i]^abtNT[i]);
-    nt = (nt << 8) | (uint32_t)(abtNT[i]);
-  }
-  
-  uint32_t ks0 = crypto1_word(state,uid_xor_nt,0);
-  for(i=0;i<4;i++)
-  abtdata2[i] = rand()%0x100; //generate rand nr
-  
-  //uint32_t convert uint8_t and transfer
-  //method
-
-  // uint8_t *byte = (uint8_t*)&ks1;
-  // for(i=0;i<4;i++){
-  //   abtdata2[i]=byte[3-i];
-  // }
-
-  for(i=0;i<4;i++){
-    abtdata2[4+i] = ((prng_successor(nt, 64) >> 8 *(3-i)) & 0xff);
+  if ((abtRx[0] ^ abtRx[1] ^ abtRx[2] ^ abtRx[3] ^ abtRx[4]) != 0) {
+    printf("WARNING: BCC check failed!\n");
   }
 
-  // Configure the Parity
-  if (nfc_device_set_property_bool(pnd, NP_HANDLE_PARITY, false) < 0) {
-    nfc_perror(pnd, "nfc_device_set_property_bool");
-    nfc_close(pnd);
-    nfc_exit(context);
-    return false;
-  }
-
-  uint8_t ks_bit[1] = {0x00};
-  int respByte = 0;
-  respByte = sent_bits(64,abtdata2,true);
-  if(respByte == 254){
-    int count2 =0;
-    for(i = 0; i < 4;i++){
-      if(abtNT[i] == abtRx[i])
-      count2++;
-    }
-
-    if (count2 == 4){
-      if(!readse)
-      ERR("Key is wrong,please change key and try again");
-        // finish, halt the tag now
-      iso14443a_crc_append(abtHalt, 2);
-      transmit_bytes(abtHalt, 4);
-      return false;
-    }
-    ERR("Warning, the key maybe wrong");
-  } else if (respByte == 1 || respByte == 0){
-    msgcheck();
-    return false;
-  }
-
-  //at check
-  uint32_t at = prng_successor(nt,96);
-  uint8_t ks3[4] = {0x00,0x00,0x00,0x00};
-  for(i=0;i<4;i++){
-    ks3[i] = crypto1_byte(state,0,0);
-    if( (ks3[i] ^ abtRx[i]) != (at >> (3-i)*8 & 0xff))
-    ERR("Warning, AT is wrong");
-  }
-  //read tag
-  if ( write_tag == false){
-    abtdata[0] = 0x30;  abtdata[1] = abtAuthBlock[1];
-    iso14443a_crc_append(abtdata, 2);
-    respByte = sent_bits(32,abtdata,true);
-    if(respByte == 0){
-      msgcheck();
-      return false;
-    }
-
-    printf("\nblock %02x data:\n",abtAuthBlock[1]);
-    if(abtAuthBlock[1]%4 == 0)
-    printf("+Sector: %d\n", abtAuthBlock[1]/4);
+  memcpy(abtRawUid+4,abtRx,4);
+  memcpy(abtSelectTag + 2, abtRx, 5);
+  abtSelectTag[0] = 0x95;
+  iso14443a_crc_append(abtSelectTag, 7);
+  transmit_bytes(abtSelectTag, 9);
+//read start!!
+   abtdata2[0] = 0x30; 
+  for(i=0;i<0x26;i++){
+    abtdata2[1] = i;
+    iso14443a_crc_append(abtdata2,2);
+    transmit_bytes(abtdata2,4);
+    if(i%4 == 0)
+    printf("+Sector: %d\n", i/4);
     printf("\t       ");
-
-  for(i=0;i<16;i++){
-    printf("%02X",abtRx[i] ^ crypto1_byte(state,0,0));
+    int in;
+  for(in=0;in<16;in++){
+    printf("%02X",abtRx[in]);
     if(!nospace)
     printf("  ");
   }
-  crypto1_byte(state,0,0); crypto1_byte(state,0,0);
   printf("\n");
-
-  } else if(readse == false || write_tag == true){
-    abtdata[0] = 0xa0;  abtdata[1] = abtAuthBlock[1];
-    iso14443a_crc_append(abtdata, 2);
-    sent_bits(32,abtdata,true);
-    //write tag message send
-
-    if ( msgcheck() ){
-      sent_bits(144,abtwriteblock,true);
-      if( msgcheck() ){
-        printf("成功更改!!\n");
-      } else {
-        printf("失敗\n");
-      }
-    } else {
-      return false;
-    }
-  }
-  crypto1_destroy(state);
-  printf("usekey: %lx\n",keys[k]);
-  return true;
-  }
+}
   return true;
 }
-
