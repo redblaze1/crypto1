@@ -15,14 +15,22 @@ int main(){
     // struct Crypto1State *state;
     // uint64_t key = 0x0ll;
     // state = crypto1_create(key);
-    int i,j,tmp[4],count[17]={0},total=0;
-    for(i = 0; i < 1 << 20; ++i) {  //i=0;i<=0xfffff;i++
-        for(j = 0; j < 16; ++j){
-            tmp[0] = filter( (i << 1) | ( j & 1) );
-            tmp[1] = filter( (i << 2) | ( j  & 3) );
-            tmp[2] = filter( (i << 3) | ( j  & 7) );
-            tmp[3] = filter( (i << 4) |   j       );
-            total += tmp[0] ^ tmp[1] ^ tmp[2] ^ tmp[3];
+    uint32_t i , j;
+    int tmp[5],count[17]={0},total=0;
+    // for(i = 0; i < 1 << 19; i+=1) {  //i=0;i<=0xfffff;i++
+    for(i = 0; i < (1 << 20); i+=1) {  //i=0;i<=0xfffff;i++
+        for(j = 0; j < 16; j+=1){
+            // tmp[0] = filter( (i << 1) | ( j & 1) );
+            // tmp[1] = filter( (i << 2) | ( j  & 3) );
+            // tmp[2] = filter( (i << 3) | ( j  & 7) );
+            // tmp[3] = filter( (i << 4) |   j       );
+            // total += tmp[0] ^ tmp[1] ^ tmp[2] ^ tmp[3];
+            tmp[0] = filter(i);
+            tmp[1] = filter( (i << 1) | ( j & 1) );
+            tmp[2] = filter( (i << 2) | ( j  & 3) );
+            tmp[3] = filter( (i << 3) | ( j  & 7) );
+            tmp[4] = filter( (i << 4) |   j       );
+            total += tmp[0] ^ tmp[1] ^ tmp[2] ^ tmp[3] ^ tmp[4];
         }
         count[total]++;
         total = 0;
